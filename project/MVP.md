@@ -1,0 +1,157 @@
+<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
+
+# So Give me the MVP roadmap only this MVP Sprint is full concrete implementation
+
+Yes — for Basiq, the **MVP roadmap** should be a narrow 4-week implementation sprint focused only on a provider-driven kernel, two adapters, one React integration surface, and one working demo, because your architecture style is modular and provider-first and the current Basiq concept already centers on a core registry, hooks, UI components, and Lalamove/J\&T adapters.
+
+## MVP scope
+
+The MVP should include only these packages: `@basiq/core`, `@basiq/react`, `@basiq/provider-lalamove`, `@basiq/provider-jt`, `@basiq/psgc`, one docs app, and one example React app.
+The MVP should support only four app-facing flows: `createShipment`, `getRates`, `trackShipment`, and `parseWebhook`, because those are the smallest useful surface area for proving a universal logistics layer.
+Do **not** include Vue/Svelte output, hosted services, broad provider coverage, advanced theming, returns, or enterprise dashboards in this sprint.
+
+## Week 1
+
+### Days 1–2: Freeze contracts
+
+- Finalize `UNIVERSAL_SCHEMA.md`, `ADAPTER_CONTRACT.md`, and `ARCHITECTURE.md` before coding deeper features, because your workflow works best when boundaries are defined first.
+- Lock the internal domain model for `PHAddress`, `PHContact`, `PHShipment`, `ShipmentStatus`, `ProviderCapabilities`, and normalized errors.
+- Define only one provider key format: `lalamove` and `jt`, and keep display names out of core logic.
+
+
+### Days 3–4: Build core package
+
+- Implement `packages/core/src/address`, `contact`, `shipment`, `registry`, `adapters`, `webhooks`, and `errors` exactly as the monorepo structure expects.
+- Add Zod schemas for address, contact, shipment, and webhook payload normalization.
+- Implement the provider registry, BYOK manager, capability checks, and typed error classes first, because everything else depends on them.
+
+
+### Day 5: PSGC package
+
+- Build `@basiq/psgc` with compressed lookup helpers for region, province, city, and barangay validation so PH-specific address normalization is present from V1.
+- Expose simple helpers like `findRegion`, `findProvince`, `findCity`, and `findBarangayByCity`.
+
+
+## Week 2
+
+### Days 6–7: Lalamove adapter
+
+- Implement `provider-lalamove` with client, auth, capability definition, shipment mapping, rate mapping, tracking mapping, and webhook parsing.
+- Treat the adapter as an isolated translation layer only, because provider-specific behavior should stay outside shared packages in your architecture model.
+- Focus first on sandbox-safe shipment creation, rate quotes, and tracking rather than every optional Lalamove feature.
+
+
+### Days 8–9: J\&T adapter
+
+- Implement `provider-jt` with the same internal structure as Lalamove so both adapters satisfy one contract.
+- Normalize provider outputs into one shared Basiq result format, even if some fields are missing or need capability warnings.
+- Add `getCapabilities()` so unsupported features are explicit rather than hidden.
+
+
+### Day 10: Contract tests
+
+- Write contract tests that run the same expectations against both adapters for `createShipment`, `getRates`, `trackShipment`, and `parseWebhook`.
+- Add fixtures for raw request, response, and webhook payloads so mapping drift is easy to catch later.
+
+
+## Week 3
+
+### Days 11–12: React package
+
+- Implement `@basiq/react` with `BasiqProvider`, `useShipment`, `useRates`, `useTracking`, and `useProviderCapabilities`.
+- Use TanStack Query patterns for loading, caching, and errors so app integrations stay consistent.
+
+
+### Days 13–14: UI package
+
+- Build only three UI components: `AddressPicker`, `TrackingTimeline`, and `RateComparisonCard`.
+- Keep the UI minimal and wired to normalized core outputs, not provider-native payloads.
+- Use default styling tokens only; postpone full branding API polish until after the core is validated.
+
+
+### Day 15: Example app
+
+- Create `apps/example-react` that proves the full loop: configure credentials, create shipment, fetch rates, track shipment, and render the timeline.
+- This app is the MVP proof, so it matters more than extra components or visual polish.
+
+
+## Week 4
+
+### Days 16–17: Docs app
+
+- Ship a minimal docs site with Quickstart, Concepts, Provider Setup, Universal Schema, Adapter Capability Matrix, and Example App walkthrough.
+- Add one architecture diagram and one request flow diagram so developers understand the core-to-adapter model quickly.
+
+
+### Days 18–19: Hardening
+
+- Add CI checks for lint, typecheck, unit tests, contract tests, and package builds so the monorepo stays release-safe from the start.
+- Add release gate and audit triage docs or scripts only at the level needed to protect the MVP, not as a giant enterprise process.
+- Verify that provider-specific auth, token handling, and webhook paths are isolated, because real courier integrations can involve bearer tokens, token expiry handling, and onboarding complexity.[^1]
+
+
+### Day 20: MVP ship checklist
+
+- Confirm that a developer can install the packages, register credentials, create a shipment with one payload, fetch rates, track a shipment, and receive a normalized webhook event through the example app.
+- Confirm that both adapters pass the same contract tests and that docs match actual package behavior.
+- If any provider feature is unsupported, surface it through capability flags or warnings instead of pretending parity exists.
+
+
+## Ship criteria
+
+Your MVP is done when these deliverables exist and work end to end:
+
+- `@basiq/core` with schemas, registry, errors, and webhook normalizer.
+- `@basiq/provider-lalamove` and `@basiq/provider-jt` both passing shared contract tests.
+- `@basiq/react` with the four main hooks and provider wrapper.
+- `@basiq/ui` with Address Picker, Tracking Timeline, and Rate Comparison Card.
+- `@basiq/psgc` with usable PH geographic lookup helpers.
+- `apps/docs` and `apps/example-react` proving real developer onboarding.
+
+
+## Non-goals
+
+Do not build these in the MVP sprint:
+
+- Ninja Van adapter.
+- Full cross-framework component compilation.
+- Hosted webhook relay or analytics.
+- Enterprise billing or reseller workflows.
+- Large provider marketplace claims.
+
+This is the clean MVP sequence: **Week 1 contracts and core, Week 2 adapters, Week 3 React and UI, Week 4 docs hardening and ship**.
+If you want, I can turn this next into a **day-by-day task board with exact files, commands, and ownership columns**.
+<span style="display:none">[^10][^11][^12][^13][^14][^15][^2][^3][^4][^5][^6][^7][^8][^9]</span>
+
+<div align="center">⁂</div>
+
+[^1]: https://sites.google.com/ninjavan.co/ninjaapi/api-docs
+
+[^2]: https://api-docs.ninjavan.co
+
+[^3]: https://github.com/Postco/ninja_van_api
+
+[^4]: https://www.aftership.com/carriers/ninjavan/api
+
+[^5]: https://www.ninjaone.com/docs/integrations/how-to-set-up-api-oauth-token/
+
+[^6]: https://www.facebook.com/PhilITOrg/photos/lalamove-the-countrys-reliable-on-demand-delivery-platform-is-ready-to-equip-bus/509200837881913/
+
+[^7]: https://en.wikipedia.org/wiki/J\&T_Express
+
+[^8]: https://sites.google.com/ninjavan.co/ninjaapi
+
+[^9]: https://trends.builtwith.com/shop/api-first-commerce/country/Philippines
+
+[^10]: https://www.jtexpress.com/en
+
+[^11]: https://app.ninjarmm.com/apidocs-beta/core-resources/articles/webhooks/overview
+
+[^12]: https://www.jtexpress.ph
+
+[^13]: https://ninjaforms.com/docs/webhooks/
+
+[^14]: https://www.linkedin.com/company/ph-global-jet-express-inc-j-t-express
+
+[^15]: https://django-ninja.dev/guides/api-docs/
+
