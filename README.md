@@ -1,4 +1,7 @@
-# Basiq
+<p align="center">
+  <img src="https://github.com/JustineDevs/basiq/blob/main/project/logo/Basiq-Horizotal-Logo(white).png" width="1080">
+</p>
+
 
 > Open-source infrastructure for standardizing Philippine logistics integrations.
 
